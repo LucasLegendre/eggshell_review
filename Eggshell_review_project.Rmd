@@ -1,0 +1,460 @@
+---
+title: "Eggshell_review_project"
+author: "Lucas Legendre"
+date: "14/12/2021"
+output: 
+  html_document:
+  toc: true
+  toc_float:
+    collapsed: false
+    smooth_scroll: false
+  df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Compiled under R version 4.1.2 (2021-11-01)
+
+<b>WARNING</b>: edit the working directory to your preferred folder.
+
+This document details all analyses performed in R for the study:  
+Legendre, L. J., S. Choi, and J. A. Clarke. The diverse terminology and complex evolution of reptile eggshell microstructure.
+
+For more information regarding the study, datasets, and analyses, please refer to the Main Text and Supplementary Information of this paper. If you have any additional questions, feel free to email me at <lucasjlegendre@gmail.com>.
+
+### Loading packages
+```{r, message = F}
+library(ape)
+library(castor)
+library(evobiR)
+library(ggtree)
+library(phytools)
+library(RColorBrewer)
+```
+
+## Data and tree
+
+- Tree
+```{r}
+tree<-read.nexus("treewhole_newversion.trees.nex")
+plotTree(tree, fsize=0.5,lwd=1,type="fan",ftype="i")
+```
+
+- Data
+```{r}
+data<-read.table("Datawhole_newproject.txt", header=T)
+setdiff(tree$tip.label, data$Taxon) # taxa and data match
+rownames(data)<-data$Taxon
+datanew<-ReorderData(tree, data)
+```
+
+## Ancestral state reconstruction: discrete trait (soft/semi-rigid/hard)
+
+- Extract data vectors for each coding
+```{r}
+thisstudy<-datanew$Type_2021; names(thisstudy)<-rownames(datanew)
+norell<-datanew$Type_Norell; names(norell)<-rownames(datanew)
+legendre<-datanew$Type_Legendre; names(legendre)<-rownames(datanew)
+
+# Color palette
+cols<-setNames(c("royalblue","green3","red3"),c("Soft","Semi-rigid","Hard"))
+
+# Visualize tree with node numbers
+ggtree(tree) + geom_text2(aes(subset=!isTip, label=node), hjust=-.3) + geom_tiplab()
+```
+
+### Using character coding defined in this study
+
+- Perform SIMMAP using `phytools` – 1000 iterations, using AIC to select best model
+(code modified from Liam Revell, [see here](http://blog.phytools.org/2015/07/integrating-stochastic-character-maps.html))
+```{r}
+x<-thisstudy
+
+aic<-function(logL,k) 2*k-2*logL
+aic.w<-function(aic){
+    d.aic<-aic-min(aic)
+    exp(-1/2*d.aic)/sum(exp(-1/2*d.aic))
+}
+
+logL<-sapply(c("ER","SYM","ARD"),
+    function(model,tree,x) make.simmap(tree,x,model)$logL,
+    tree=tree,x=x)
+logL
+
+AIC<-mapply(aic,logL,c(1,3,6))
+AIC
+AIC.W<-aic.w(AIC)
+AIC.W
+
+nsim<-1000
+Nsim<-round(nsim*AIC.W)
+d<-if(sum(Nsim)>nsim) -1 else 1
+nsim<-Nsim+d*sample(c(rep(1,abs(nsim-sum(Nsim))),
+    rep(0,length(Nsim)-abs(nsim-sum(Nsim)))))
+nsim
+
+o1<-make.simmap(tree,x,model="ARD",nsim=999)
+o2<-make.simmap(tree,x,model="ER",nsim=1)
+treesstudy<-c(o1,o2)
+
+objstudy<-describe.simmap(treesstudy)
+objstudy
+
+plot(objstudy,type="fan",fsize=0.01,lwd=1,ftype="i", colors=cols,ylim=c(-2,Ntip(tree)),offset=20, part=0.97)
+add.simmap.legend(colors=cols,prompt=FALSE,x=-300,y=280)
+```
+
+Here, a **semi-rigid eggshell** is the ancestral state for **almost all major reptile clades** – reptiles, lepidosaurs, squamates, turtles, archelosaurs, archosaurs, dinosaurs,ornithischians, and saurischians.
+However, there are **only 6 taxa with semi-rigid eggshells** out of 203!
+
+=> Some of these taxa may have a excessive influence on this result – probably the two sauropodomorphs with that eggshell type, since they are the closer in age to the root and to the aforementioned subclades.
+
+### Using character coding from Norell et al. (2020)
+
+```{r}
+x<-norell
+
+logL<-sapply(c("ER","SYM","ARD"),
+    function(model,tree,x) make.simmap(tree,x,model)$logL,
+    tree=tree,x=x)
+logL
+
+AIC<-mapply(aic,logL,c(1,3,6))
+AIC
+AIC.W<-aic.w(AIC)
+AIC.W
+
+nsim<-1000
+Nsim<-round(nsim*AIC.W)
+d<-if(sum(Nsim)>nsim) -1 else 1
+nsim<-Nsim+d*sample(c(rep(1,abs(nsim-sum(Nsim))),
+    rep(0,length(Nsim)-abs(nsim-sum(Nsim)))))
+nsim
+
+treesnorell<-make.simmap(tree,x,model="ARD",nsim=1000)
+
+objnorell<-describe.simmap(treesnorell)
+objnorell
+
+plot(objnorell,type="fan",fsize=0.01,lwd=1,ftype="i",
+     colors=cols,ylim=c(-2,Ntip(tree)),part=0.97)
+add.simmap.legend(colors=cols,prompt=FALSE,x=-300,y=280)
+```
+
+Completely different result – let us check which taxa are different from the previous ASR...
+```{r}
+datanew[c(which(datanew$Type_2021!=datanew$Type_Norell)),]
+# Only 7 taxa are different – two non-avian dinosaurs and five turtles
+
+# Changing character state for the two non-avian dinosaurs
+x[c(21,22)]<-"Semi-rigid"
+
+logL<-sapply(c("ER","SYM","ARD"),
+    function(model,tree,x) make.simmap(tree,x,model)$logL,
+    tree=tree,x=x)
+AIC<-mapply(aic,logL,c(1,3,6))
+AIC.W<-aic.w(AIC)
+nsim<-1000
+Nsim<-round(nsim*AIC.W)
+d<-if(sum(Nsim)>nsim) -1 else 1
+nsim<-Nsim+d*sample(c(rep(1,abs(nsim-sum(Nsim))),
+    rep(0,length(Nsim)-abs(nsim-sum(Nsim)))))
+nsim
+treesnorell<-make.simmap(tree,x,model="ARD",nsim=1000)
+objnorell<-describe.simmap(treesnorell)
+plot(objnorell,fsize=0.5,lwd=1,ftype="i",colors=cols,ylim=c(-2,Ntip(tree)),part=0.95)
+add.simmap.legend(colors=cols,prompt=FALSE,x=20,y=180)
+```
+
+All major clades are now recovered as **semi-rigid** again => strong influence of the two sauropodomorphs.
+
+### Using character coding from Legendre et al. (2020)
+
+```{r}
+x<-legendre
+
+logL<-sapply(c("ER","SYM","ARD"),
+    function(model,tree,x) make.simmap(tree,x,model)$logL,
+    tree=tree,x=x)
+logL
+
+AIC<-mapply(aic,logL,c(1,3,6))
+AIC
+AIC.W<-aic.w(AIC)
+AIC.W
+
+nsim<-1000
+Nsim<-round(nsim*AIC.W)
+d<-if(sum(Nsim)>nsim) -1 else 1
+nsim<-Nsim+d*sample(c(rep(1,abs(nsim-sum(Nsim))),
+    rep(0,length(Nsim)-abs(nsim-sum(Nsim)))))
+nsim
+
+l1<-make.simmap(tree,x,model="ER",nsim=342)
+l2<-make.simmap(tree,x,model="SYM",nsim=498)
+l3<-make.simmap(tree,x,model="ARD",nsim=160)
+treeslegendre<-c(l1,l2,l3)
+
+objlegendre<-describe.simmap(treeslegendre)
+objlegendre
+
+plot(objlegendre,type="fan",fsize=0.01,lwd=1,ftype="i",
+     colors=cols,ylim=c(-2,Ntip(tree)),part=0.97)
+add.simmap.legend(colors=cols,prompt=FALSE,x=-300,y=280)
+```
+
+Reptiles, lepidosaurs, and squamates are recovered as **ancestrally soft-shelled**, while turtles, archelosaurs, archosaurs, and all dinosaur clades are recovered as **hard-shelled**.
+
+The pattern seems to follow whichever character state is coded for the two sauropodomorphs *Lufengosaurus* and *Massospondylus*.
+
+To test this hypothesis, we must remove all other taxa (n = 7) that are not coded the same in all three studies, and see if the pattern is still present.
+
+- Remove all taxa with differences in coding, except the two sauropodomorphs
+```{r}
+remove<-rownames(datanew[c(which(datanew$Type_Legendre!=datanew$Type_Norell)),][c(3:9),])
+x<-thisstudy[!names(thisstudy)%in%remove]
+treenew<-drop.tip(tree, setdiff(tree$tip.label, names(x)))
+
+# Visualize tree with node numbers
+ggtree(treenew) + geom_text2(aes(subset=!isTip, label=node), hjust=-.3) + geom_tiplab()
+```
+
+### Replicate analysis on the new tree 3 times, with identical coding for all taxa except the two sauropodomorphs
+
+- Coded as semi-rigid
+```{r}
+logL<-sapply(c("ER","SYM","ARD"),
+    function(model,treenew,x) make.simmap(treenew,x,model)$logL,
+    tree=treenew,x=x)
+
+AIC<-mapply(aic,logL,c(1,3,6))
+AIC.W<-aic.w(AIC)
+
+nsim<-1000
+Nsim<-round(nsim*AIC.W)
+d<-if(sum(Nsim)>nsim) -1 else 1
+nsim<-Nsim+d*sample(c(rep(1,abs(nsim-sum(Nsim))),
+    rep(0,length(Nsim)-abs(nsim-sum(Nsim)))))
+nsim
+
+s1<-make.simmap(treenew,x,model="ER",nsim=75)
+s2<-make.simmap(treenew,x,model="SYM",nsim=97)
+s3<-make.simmap(treenew,x,model="ARD",nsim=828)
+treenewsr<-c(s1,s2,s3)
+
+objsr<-describe.simmap(treenewsr)
+
+plot(objsr,type="fan",fsize=0.01,lwd=1,ftype="i",
+     colors=cols,ylim=c(-2,Ntip(treenew)),part=0.97)
+add.simmap.legend(colors=cols,prompt=FALSE,x=-300,y=280)
+```
+
+Most inner clades are now recovered as **soft-shelled** – most likely an artefact due to the position of *Mussaurus* – closer to the other inner nodes than any other taxon, since it is the oldest specimen in the sample.
+
+- Coded as soft
+```{r}
+x[c(21,22)]<-"Soft"
+
+logL<-sapply(c("ER","SYM","ARD"),
+    function(model,treenew,x) make.simmap(treenew,x,model)$logL,
+    tree=treenew,x=x)
+
+AIC<-mapply(aic,logL,c(1,3,6))
+AIC.W<-aic.w(AIC)
+
+nsim<-1000
+Nsim<-round(nsim*AIC.W)
+d<-if(sum(Nsim)>nsim) -1 else 1
+nsim<-Nsim+d*sample(c(rep(1,abs(nsim-sum(Nsim))),
+    rep(0,length(Nsim)-abs(nsim-sum(Nsim)))))
+nsim
+
+so1<-make.simmap(treenew,x,model="ER",nsim=46)
+so2<-make.simmap(treenew,x,model="SYM",nsim=106)
+so3<-make.simmap(treenew,x,model="ARD",nsim=848)
+treenews<-c(so1, so2, so3)
+
+objs<-describe.simmap(treenews)
+
+plot(objs,type="fan",fsize=0.01,lwd=1,ftype="i",
+     colors=cols,ylim=c(-2,Ntip(treenew)),part=0.97)
+add.simmap.legend(colors=cols,prompt=FALSE,x=-300,y=280)
+```
+
+Same result as with semi-rigid coding, unsurprisingly.
+
+- Coded as hard
+```{r}
+x[c(21,22)]<-"Hard"
+
+logL<-sapply(c("ER","SYM","ARD"),
+    function(model,treenew,x) make.simmap(treenew,x,model)$logL,
+    tree=treenew,x=x)
+
+AIC<-mapply(aic,logL,c(1,3,6))
+AIC.W<-aic.w(AIC)
+
+nsim<-1000
+Nsim<-round(nsim*AIC.W)
+d<-if(sum(Nsim)>nsim) -1 else 1
+nsim<-Nsim+d*sample(c(rep(1,abs(nsim-sum(Nsim))),
+    rep(0,length(Nsim)-abs(nsim-sum(Nsim)))))
+nsim
+
+h1<-make.simmap(treenew,x,model="ER",nsim=354)
+h2<-make.simmap(treenew,x,model="SYM",nsim=496)
+h3<-make.simmap(treenew,x,model="ARD",nsim=150)
+treenewh<-c(h1, h2, h3)
+
+objh<-describe.simmap(treenewh)
+
+plot(objh,type="fan",fsize=0.01,lwd=1,ftype="i",
+     colors=cols,ylim=c(-2,Ntip(treenew)),part=0.97)
+add.simmap.legend(colors=cols,prompt=FALSE,x=-300,y=280)
+```
+
+Ancestral state for dinosaurs and archosaurs, and all major less inclusive clades except pterosaurs, is *hard-shelled*, as in the Legendre et al. (2020) coding.
+
+To check how strongly are these results influenced by branch length information, we can replicate these analyses using maximum parsimony, which does not consider branch length information, using `castor`.
+
+- Coding from this study
+```{r}
+studyN<-thisstudy
+studyN[studyN=="Soft"]<-1; studyN[studyN=="Semi-rigid"]<-2; studyN[studyN=="Hard"]<-3
+studyN<-as.numeric(studyN); names(studyN)<-names(thisstudy)
+
+MPS<-asr_max_parsimony(tree, studyN, Nstates=3)
+plotTree(tree,type="fan",fsize=0.01,lwd=1,ftype="i",
+         colors=cols,ylim=c(-2,Ntip(treenew)),part=0.97)
+nodelabels(node=1:tree$Nnode+Ntip(tree),pie=MPS$ancestral_likelihoods,piecol=cols,cex=0.5)
+tiplabels(pie=to.matrix(studyN,sort(unique(studyN))),piecol=cols,cex=0.3)
+add.simmap.legend(colors=cols,prompt=FALSE,x=-300,y=280,fsize=0.8)
+
+MPS2<-MPS$ancestral_likelihoods; rownames(MPS2)<-c(204:369)
+```
+
+- Coding from Norell et al. (2020)
+```{r}
+norellN<-norell
+norellN[norellN=="Soft"]<-1; norellN[norellN=="Semi-rigid"]<-2; norellN[norellN=="Hard"]<-3
+norellN<-as.numeric(norellN); names(norellN)<-names(norell)
+
+MPN<-asr_max_parsimony(tree, norellN, Nstates=3)
+plotTree(tree,type="fan",fsize=0.01,lwd=1,ftype="i",
+         colors=cols,ylim=c(-2,Ntip(treenew)),part=0.97)
+nodelabels(node=1:tree$Nnode+Ntip(tree),pie=MPN$ancestral_likelihoods,piecol=cols,cex=0.5)
+tiplabels(pie=to.matrix(norellN,sort(unique(norellN))),piecol=cols,cex=0.3)
+add.simmap.legend(colors=cols,prompt=FALSE,x=-300,y=180,fsize=0.8)
+
+MPN2<-MPN$ancestral_likelihoods; rownames(MPN2)<-c(204:369)
+```
+
+- Coding from Legendre et al. (2020)
+```{r}
+legendreN<-legendre
+legendreN[legendreN=="Soft"]<-1; legendreN[legendreN=="Semi-rigid"]<-2; legendreN[legendreN=="Hard"]<-3
+legendreN<-as.numeric(legendreN); names(legendreN)<-names(legendre)
+
+MPL<-asr_max_parsimony(tree, legendreN, Nstates=3)
+plotTree(tree,type="fan",fsize=0.01,lwd=1,ftype="i",
+         colors=cols,ylim=c(-2,Ntip(treenew)),part=0.97)
+nodelabels(node=1:tree$Nnode+Ntip(tree),pie=MPL$ancestral_likelihoods,piecol=cols,cex=0.5)
+tiplabels(pie=to.matrix(legendreN,sort(unique(legendreN))),piecol=cols,cex=0.3)
+add.simmap.legend(colors=cols,prompt=FALSE,x=-300,y=280,fsize=0.8)
+
+MPL2<-MPL$ancestral_likelihoods; rownames(MPL2)<-c(204:369)
+```
+
+- With the reduced tree, changing only the two sauropodomorphs
+```{r}
+xN<-x
+xN[xN=="Soft"]<-1; xN[xN=="Semi-rigid"]<-2; xN[xN=="Hard"]<-3
+xN<-as.numeric(xN); names(xN)<-names(x)
+
+# Coded as soft
+xN[c(21,22)]<-1
+MPx<-asr_max_parsimony(treenew, xN, Nstates=3)
+plotTree(treenew,fsize=0.4,lwd=1,ftype="i",colors=cols)
+nodelabels(node=1:treenew$Nnode+Ntip(treenew),pie=MPx$ancestral_likelihoods,piecol=cols,cex=0.5)
+tiplabels(pie=to.matrix(xN,sort(unique(xN))),piecol=cols,cex=0.3)
+add.simmap.legend(colors=cols,prompt=FALSE,x=25,y=180,fsize=0.8)
+
+MPx2<-MPx$ancestral_likelihoods; rownames(MPx2)<-c(197:355)
+
+# Coded as semi-rigid
+xN[c(21,22)]<-2
+MPx<-asr_max_parsimony(treenew, xN, Nstates=3)
+plotTree(treenew,fsize=0.4,lwd=1,ftype="i",colors=cols)
+nodelabels(node=1:treenew$Nnode+Ntip(treenew),pie=MPx$ancestral_likelihoods,piecol=cols,cex=0.5)
+tiplabels(pie=to.matrix(xN,sort(unique(xN))),piecol=cols,cex=0.3)
+add.simmap.legend(colors=cols,prompt=FALSE,x=25,y=180,fsize=0.8)
+
+MPx2<-MPx$ancestral_likelihoods; rownames(MPx2)<-c(197:355)
+
+# Coded as hard
+xN[c(21,22)]<-3
+MPx<-asr_max_parsimony(treenew, xN, Nstates=3)
+plotTree(treenew,fsize=0.4,lwd=1,ftype="i",colors=cols)
+nodelabels(node=1:treenew$Nnode+Ntip(treenew),pie=MPx$ancestral_likelihoods,piecol=cols,cex=0.5)
+tiplabels(pie=to.matrix(xN,sort(unique(xN))),piecol=cols,cex=0.3)
+add.simmap.legend(colors=cols,prompt=FALSE,x=25,y=180,fsize=0.8)
+
+MPx2<-MPx$ancestral_likelihoods; rownames(MPx2)<-c(197:355)
+```
+
+## Ancestral state reconstruction – continuous character (eggshell thickness)
+
+- Data and tree
+```{r}
+treedi<-multi2di(tree, random=FALSE)
+AET<-log1p(datanew$Eggshell_thickness); names(AET)<-rownames(datanew)
+RET<-log1p(datanew$Eggshell_thickness/datanew$Egg_mass); names(RET)<-rownames(datanew)
+```
+
+- Phylogenetic signal (`contMap` assumes a Brownian motion model)
+```{r}
+phylosig(treedi, AET, method="lambda", test=TRUE)
+phylosig(treedi, RET, method="lambda", test=TRUE)
+```
+Very strong signal for both absolute and relative eggshell thickness.
+
+- ASR for absolute eggshell thickness
+```{r, warning = F}
+phyloplotAET<-contMap(treedi, AET, plot=F)
+plot(setMap(phyloplotAET,colors=rev(brewer.pal(10, "Spectral"))),type="fan",
+     fsize=0.01,lwd=4,ylim=c(-2,Ntip(treenew)),part=0.8,legend=FALSE)
+add.color.bar(leg=100,cols=rev(brewer.pal(10,"Spectral")),
+              prompt=FALSE,x=-300,y=280)
+
+# Ancestral states
+expm1(fastAnc(treedi, AET))
+```
+
+Ancestral eggshell thickness seems to be **intermediate** for all major nodes, including archosaurs and dinosaurs. However, many extant lepidosaurs are also recovered as intermediate – likely due to the extremely low values in pterosaurs, reported as lacking a calcareous layer entirely, which shift any thicker eggshell towards the middle of the spectrum.
+
+Furthermore, the pattern strongly follows that of body mass, as expected (e.g. Stein et al., 2019; Legendre and Clarke, 2021).
+
+- ASR for relative eggshell thickness
+```{r, warning = F}
+phyloplotRET<-contMap(treedi, RET, plot=F)
+plot(setMap(phyloplotRET,colors=rev(brewer.pal(10, "Spectral"))),type="fan",
+     fsize=0.01,lwd=4,ylim=c(-2,Ntip(treenew)),part=0.8,legend=FALSE)
+add.color.bar(leg=100,cols=rev(brewer.pal(10,"Spectral")),
+              prompt=FALSE,x=-300,y=280)
+
+# Ancestral states
+expm1(fastAnc(treedi, RET))
+```
+
+Much lower values for archosaurs and dinosaurs – eggshell thickness seems to have become **thinner** for a given egg mass at the base of Ornithodira, and later increased in theropods. However, this pattern is dependent on a very small sample of pterosaurs, ornithischians, and sauropods; it is likely that the addition of new specimens attributed to any of these clades would considerably change that pattern.
+
+We can see a strong increase in geckos and in eufalconimorphs – the latter having already been identified in Legendre and Clarke (2021).
+
+
+## References
+- Legendre, L.J., Clarke, J.A., 2021. Shifts in eggshell thickness are related to changes in locomotor ecology in dinosaurs. *Evolution* 75, 1415–1430.
+- Legendre, L.J., Rubilar-Rogers, D., Musser, G.M., Davis, S.N., Otero, R.A., Vargas, A.O., Clarke, J.A., 2020. A giant soft-shelled egg from the Late Cretaceous of Antarctica. *Nature* 583, 411–414.
+- Norell, M.A., Wiemann, J., Fabbri, M., Yu, C., Marsicano, C.A., Moore-Nall, A., Varricchio, D.J., Pol, D., Zelenitsky, D.K., 2020. The first dinosaur egg was soft. *Nature* 583, 406–410.
+- Stein, K., Prondvai, E., Huang, T., Baele, J.-M., Sander, P.M., Reisz, R., 2019. Structure and evolutionary implications of the earliest (Sinemurian, Early Jurassic) dinosaur eggs and eggshells. *Scientific Reports* 9, 4424.
