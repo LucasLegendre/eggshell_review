@@ -1,6 +1,6 @@
 # eggshell_review
 
-Contains datasets, phylogenetic trees, and R code related to analyses for the eggshell review project, as published in Legendre et al. (2022).
+Contains the dataset, phylogenetic tree, and R code related to analyses for the eggshell review project, as published in Legendre et al. (2022).
 
 File description:
 
