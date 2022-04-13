@@ -1,6 +1,8 @@
 # eggshell_review
 
-Contains the dataset, phylogenetic tree, and R code related to analyses for the eggshell review project, as published in Legendre et al. (2022).
+Contains the dataset, phylogenetic tree, and R code related to analyses for the following study:
+
+Legendre, L. J., S. Choi, and J. A. Clarke. 2022. The use of inconsistent terminology for reptile eggshell traits affects the outcome of evolutionary analyses. <i>Journal of Anatomy</i>
 
 File description:
 
