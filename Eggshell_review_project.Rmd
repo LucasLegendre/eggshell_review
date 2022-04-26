@@ -1,26 +1,26 @@
 ---
 title: "Eggshell_review_project"
 author: "Lucas Legendre"
-date: "14/12/2021"
-output: 
+date: "25/04/2022"
+output:
   html_document:
-  toc: true
-  toc_float:
-    collapsed: false
-    smooth_scroll: false
-  df_print: paged
+     toc: true
+     toc_float:
+      collapsed: false
+      smooth_scroll: false
+     df_print: paged
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Compiled under R version 4.1.2 (2021-11-01)
+Compiled under R version 4.2.0 (2022-04-22)
 
 <b>WARNING</b>: edit the working directory to your preferred folder.
 
 This document details all analyses performed in R for the study:  
-Legendre, L. J., S. Choi, and J. A. Clarke. The diverse terminology and complex evolution of reptile eggshell microstructure.
+Legendre, L. J., S. Choi, and J. A. Clarke. The use of inconsistent terminology for reptile eggshell traits affects the outcome of evolutionary analyses. <i>Journal of Anatomy</i>.
 
 For more information regarding the study, datasets, and analyses, please refer to the Main Text and Supplementary Information of this paper. If you have any additional questions, feel free to email me at <lucasjlegendre@gmail.com>.
 
@@ -65,7 +65,7 @@ cols<-setNames(c("royalblue","green3","red3"),c("Soft","Semi-rigid","Hard"))
 ggtree(tree) + geom_text2(aes(subset=!isTip, label=node), hjust=-.3) + geom_tiplab()
 ```
 
-### Using character coding defined in this study
+### Using character coding defined in this study (new scoring)
 
 - Perform SIMMAP using `phytools` – 1000 iterations, using AIC to select best model
 (code modified from Liam Revell, [see here](http://blog.phytools.org/2015/07/integrating-stochastic-character-maps.html))
@@ -95,23 +95,22 @@ nsim<-Nsim+d*sample(c(rep(1,abs(nsim-sum(Nsim))),
     rep(0,length(Nsim)-abs(nsim-sum(Nsim)))))
 nsim
 
-o1<-make.simmap(tree,x,model="ARD",nsim=999)
-o2<-make.simmap(tree,x,model="ER",nsim=1)
+o1<-make.simmap(tree,x,model="ARD",nsim=nsim[1])
+o2<-make.simmap(tree,x,model="ER",nsim=nsim[2])
 treesstudy<-c(o1,o2)
 
 objstudy<-describe.simmap(treesstudy)
-objstudy
 
 plot(objstudy,type="fan",fsize=0.01,lwd=1,ftype="i", colors=cols,ylim=c(-2,Ntip(tree)),offset=20, part=0.97)
 add.simmap.legend(colors=cols,prompt=FALSE,x=-300,y=280)
 ```
 
 Here, a **semi-rigid eggshell** is the ancestral state for **almost all major reptile clades** – reptiles, lepidosaurs, squamates, turtles, archelosaurs, archosaurs, dinosaurs,ornithischians, and saurischians.
-However, there are **only 6 taxa with semi-rigid eggshells** out of 203!
+However, there are **only 6 taxa with semi-rigid eggshells** out of 208!
 
 => Some of these taxa may have a excessive influence on this result – probably the two sauropodomorphs with that eggshell type, since they are the closer in age to the root and to the aforementioned subclades.
 
-### Using character coding from Norell et al. (2020)
+### Using character coding from Norell et al. (2020) – ratio scoring
 
 ```{r}
 x<-norell
@@ -133,10 +132,11 @@ nsim<-Nsim+d*sample(c(rep(1,abs(nsim-sum(Nsim))),
     rep(0,length(Nsim)-abs(nsim-sum(Nsim)))))
 nsim
 
-treesnorell<-make.simmap(tree,x,model="ARD",nsim=1000)
+n1<-make.simmap(tree,x,model="ARD",nsim=nsim[1])
+n2<-make.simmap(tree,x,model="ER",nsim=nsim[2])
+treesnorell<-c(o1,o2)
 
 objnorell<-describe.simmap(treesnorell)
-objnorell
 
 plot(objnorell,type="fan",fsize=0.01,lwd=1,ftype="i",
      colors=cols,ylim=c(-2,Ntip(tree)),part=0.97)
@@ -170,7 +170,7 @@ add.simmap.legend(colors=cols,prompt=FALSE,x=20,y=180)
 
 All major clades are now recovered as **semi-rigid** again => strong influence of the two sauropodomorphs.
 
-### Using character coding from Legendre et al. (2020)
+### Using character coding from Legendre et al. (2020) – shell unit scoring
 
 ```{r}
 x<-legendre
@@ -192,13 +192,12 @@ nsim<-Nsim+d*sample(c(rep(1,abs(nsim-sum(Nsim))),
     rep(0,length(Nsim)-abs(nsim-sum(Nsim)))))
 nsim
 
-l1<-make.simmap(tree,x,model="ER",nsim=342)
-l2<-make.simmap(tree,x,model="SYM",nsim=498)
-l3<-make.simmap(tree,x,model="ARD",nsim=160)
+l1<-make.simmap(tree,x,model="ER",nsim=nsim[1])
+l2<-make.simmap(tree,x,model="SYM",nsim=nsim[2])
+l3<-make.simmap(tree,x,model="ARD",nsim=nsim[3])
 treeslegendre<-c(l1,l2,l3)
 
 objlegendre<-describe.simmap(treeslegendre)
-objlegendre
 
 plot(objlegendre,type="fan",fsize=0.01,lwd=1,ftype="i",
      colors=cols,ylim=c(-2,Ntip(tree)),part=0.97)
@@ -239,9 +238,9 @@ nsim<-Nsim+d*sample(c(rep(1,abs(nsim-sum(Nsim))),
     rep(0,length(Nsim)-abs(nsim-sum(Nsim)))))
 nsim
 
-s1<-make.simmap(treenew,x,model="ER",nsim=75)
-s2<-make.simmap(treenew,x,model="SYM",nsim=97)
-s3<-make.simmap(treenew,x,model="ARD",nsim=828)
+s1<-make.simmap(treenew,x,model="ER",nsim=nsim[1])
+s2<-make.simmap(treenew,x,model="SYM",nsim=nsim[2])
+s3<-make.simmap(treenew,x,model="ARD",nsim=nsim[3])
 treenewsr<-c(s1,s2,s3)
 
 objsr<-describe.simmap(treenewsr)
@@ -271,9 +270,9 @@ nsim<-Nsim+d*sample(c(rep(1,abs(nsim-sum(Nsim))),
     rep(0,length(Nsim)-abs(nsim-sum(Nsim)))))
 nsim
 
-so1<-make.simmap(treenew,x,model="ER",nsim=46)
-so2<-make.simmap(treenew,x,model="SYM",nsim=106)
-so3<-make.simmap(treenew,x,model="ARD",nsim=848)
+so1<-make.simmap(treenew,x,model="ER",nsim=nsim[1])
+so2<-make.simmap(treenew,x,model="SYM",nsim=nsim[2])
+so3<-make.simmap(treenew,x,model="ARD",nsim=nsim[3])
 treenews<-c(so1, so2, so3)
 
 objs<-describe.simmap(treenews)
@@ -303,9 +302,9 @@ nsim<-Nsim+d*sample(c(rep(1,abs(nsim-sum(Nsim))),
     rep(0,length(Nsim)-abs(nsim-sum(Nsim)))))
 nsim
 
-h1<-make.simmap(treenew,x,model="ER",nsim=354)
-h2<-make.simmap(treenew,x,model="SYM",nsim=496)
-h3<-make.simmap(treenew,x,model="ARD",nsim=150)
+h1<-make.simmap(treenew,x,model="ER",nsim=nsim[1])
+h2<-make.simmap(treenew,x,model="SYM",nsim=nsim[2])
+h3<-make.simmap(treenew,x,model="ARD",nsim=nsim[3])
 treenewh<-c(h1, h2, h3)
 
 objh<-describe.simmap(treenewh)
@@ -332,7 +331,9 @@ nodelabels(node=1:tree$Nnode+Ntip(tree),pie=MPS$ancestral_likelihoods,piecol=col
 tiplabels(pie=to.matrix(studyN,sort(unique(studyN))),piecol=cols,cex=0.3)
 add.simmap.legend(colors=cols,prompt=FALSE,x=-300,y=280,fsize=0.8)
 
-MPS2<-MPS$ancestral_likelihoods; rownames(MPS2)<-c(204:369)
+# ancestral states
+MPS2<-MPS$ancestral_likelihoods
+rownames(MPS2)<-c(209:374); colnames(MPS2)<-c("soft","semi-rigid","hard")
 ```
 
 - Coding from Norell et al. (2020)
@@ -348,7 +349,9 @@ nodelabels(node=1:tree$Nnode+Ntip(tree),pie=MPN$ancestral_likelihoods,piecol=col
 tiplabels(pie=to.matrix(norellN,sort(unique(norellN))),piecol=cols,cex=0.3)
 add.simmap.legend(colors=cols,prompt=FALSE,x=-300,y=180,fsize=0.8)
 
-MPN2<-MPN$ancestral_likelihoods; rownames(MPN2)<-c(204:369)
+# ancestral states
+MPN2<-MPN$ancestral_likelihoods
+rownames(MPN2)<-c(209:374); colnames(MPN2)<-c("soft","semi-rigid","hard")
 ```
 
 - Coding from Legendre et al. (2020)
@@ -364,7 +367,9 @@ nodelabels(node=1:tree$Nnode+Ntip(tree),pie=MPL$ancestral_likelihoods,piecol=col
 tiplabels(pie=to.matrix(legendreN,sort(unique(legendreN))),piecol=cols,cex=0.3)
 add.simmap.legend(colors=cols,prompt=FALSE,x=-300,y=280,fsize=0.8)
 
-MPL2<-MPL$ancestral_likelihoods; rownames(MPL2)<-c(204:369)
+# ancestral states
+MPL2<-MPL$ancestral_likelihoods
+rownames(MPL2)<-c(209:374); colnames(MPL2)<-c("soft","semi-rigid","hard")
 ```
 
 - With the reduced tree, changing only the two sauropodomorphs
@@ -381,7 +386,8 @@ nodelabels(node=1:treenew$Nnode+Ntip(treenew),pie=MPx$ancestral_likelihoods,piec
 tiplabels(pie=to.matrix(xN,sort(unique(xN))),piecol=cols,cex=0.3)
 add.simmap.legend(colors=cols,prompt=FALSE,x=25,y=180,fsize=0.8)
 
-MPx2<-MPx$ancestral_likelihoods; rownames(MPx2)<-c(197:355)
+MPx2<-MPx$ancestral_likelihoods
+rownames(MPx2)<-c(202:360); colnames(MPx2)<-c("soft","semi-rigid","hard")
 
 # Coded as semi-rigid
 xN[c(21,22)]<-2
@@ -391,7 +397,8 @@ nodelabels(node=1:treenew$Nnode+Ntip(treenew),pie=MPx$ancestral_likelihoods,piec
 tiplabels(pie=to.matrix(xN,sort(unique(xN))),piecol=cols,cex=0.3)
 add.simmap.legend(colors=cols,prompt=FALSE,x=25,y=180,fsize=0.8)
 
-MPx2<-MPx$ancestral_likelihoods; rownames(MPx2)<-c(197:355)
+MPx2<-MPx$ancestral_likelihoods
+rownames(MPx2)<-c(202:360); colnames(MPx2)<-c("soft","semi-rigid","hard")
 
 # Coded as hard
 xN[c(21,22)]<-3
@@ -401,7 +408,8 @@ nodelabels(node=1:treenew$Nnode+Ntip(treenew),pie=MPx$ancestral_likelihoods,piec
 tiplabels(pie=to.matrix(xN,sort(unique(xN))),piecol=cols,cex=0.3)
 add.simmap.legend(colors=cols,prompt=FALSE,x=25,y=180,fsize=0.8)
 
-MPx2<-MPx$ancestral_likelihoods; rownames(MPx2)<-c(197:355)
+MPx2<-MPx$ancestral_likelihoods
+rownames(MPx2)<-c(202:360); colnames(MPx2)<-c("soft","semi-rigid","hard")
 ```
 
 ## Ancestral state reconstruction – continuous character (eggshell thickness)
@@ -409,6 +417,10 @@ MPx2<-MPx$ancestral_likelihoods; rownames(MPx2)<-c(197:355)
 - Data and tree
 ```{r}
 treedi<-multi2di(tree, random=FALSE)
+
+# To visualize node numbers on the tree
+ggtree(treedi) + geom_text2(aes(subset=!isTip, label=node), hjust=-.3) + geom_tiplab()
+
 AET<-log1p(datanew$Eggshell_thickness); names(AET)<-rownames(datanew)
 RET<-log1p(datanew$Eggshell_thickness/datanew$Egg_mass); names(RET)<-rownames(datanew)
 ```
