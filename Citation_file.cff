@@ -6,8 +6,7 @@ title: eggshell_review
 message: Please cite this dataset using these metadata.
 type: dataset
 authors:
-  - given-names: Lucas
-    name-particle: J
+  - given-names: Lucas J
     family-names: Legendre
     email: lucasjlegendre@gmail.com
     affiliation: The University of Texas at Austin
