@@ -1,0 +1,14 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: eggshell_review
+message: Please cite this dataset using these metadata.
+type: dataset
+authors:
+  - given-names: Lucas
+    name-particle: J
+    family-names: Legendre
+    email: lucasjlegendre@gmail.com
+    affiliation: The University of Texas at Austin
+    orcid: 'https://orcid.org/0000-0003-1343-8725'
