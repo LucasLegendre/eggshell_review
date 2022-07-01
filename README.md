@@ -17,7 +17,7 @@ File description:
 NOTE:
 
 The tree as published in the reference cited above contains one minor error (M. Fabbri, pers. comm.): eggs originally attributed to taxon <i>Orodromeus makelai</i> (Dinosauria, Ornithischia – see Horner and Weishampel, 1988; Hirsch and Quinn, 1990) were later identified as eggs of a troodontid (Dinosauria, Theropoda – see Horner and Weishampel, 1996; Varricchio et al., 1997). We have modified the position of this taxon (now named 'Troodontid_indet') in our tree to reflect this change.
-The new ancestral reconstructions are slightly different from the ones present in the paper (see R script and HTML tutorial). This, however, does not affect the points made in the results, discussion, and conclusion regarding the disproportionate influence of a few select taxa, as well as that of tree topology and calibration, on our reconstructions, not the ambiguity present in each coding strategy described in the paper.
+Some of the resulting ancestral reconstructions (when using SIMMAP) are slightly different from the ones present in the paper (see R script and HTML tutorial). This, however, further supports our assessment of a disproportionate influence of a few select taxa, as well as that of tree topology and calibration, on our reconstructions. Similarly, the ambiguity of each coding strategy as described in the paper is not affected by this new topology.
 
 References
 - Hirsch, K.F., Quinn, B., 1990. Eggs and eggshell fragments from the Upper Cretaceous Two Medicine Formation of Montana. <i>Journal of Vertebrate Paleontology</i> 10, 491–511. 
