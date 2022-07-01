@@ -48,7 +48,6 @@ Dinosauria	Megaloolithus_sp1	1600	1890	Hard	Hard	Hard
 Dinosauria	Megaloolithus_sp2	2400	2751	Hard	Hard	Hard
 Dinosauria	Montanoolithus_strongorum	775	241.92	Hard	Hard	Hard
 Dinosauria	Mussaurus	0	660	Soft	Soft	Soft
-Dinosauria	Orodromeus_makelai	850	365.904	Hard	Hard	Hard
 Dinosauria	Oviraptor_philoceratops	1000	254.1	Hard	Hard	Hard
 Dinosauria	Prismatoolithus_levis_troodontid	1000	331	Hard	Hard	Hard
 Dinosauria	Protoceratops_andrewsi	0	247.968	Soft	Soft	Soft
@@ -63,6 +62,7 @@ Dinosauria	Titanosaur_Type2	1400	1756	Hard	Hard	Hard
 Dinosauria	Titanosauria_indet	4430	2085.37	Hard	Hard	Hard
 Dinosauria	Triprismatoolithus	687.5	37.8	Hard	Hard	Hard
 Dinosauria	Troodon_formosus	1000	346.90992	Hard	Hard	Hard
+Dinosauria	Troodontid_indet	850	365.904	Hard	Hard	Hard
 Enantiornithes	Avian_egg1	450	12.33	Hard	Hard	Hard
 Enantiornithes	Enantiornithine_egg1	183	12.9444587	Hard	Hard	Hard
 Enantiornithes	Enantiornithine_egg2	260	17.97714	Hard	Hard	Hard

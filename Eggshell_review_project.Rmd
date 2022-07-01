@@ -95,8 +95,8 @@ nsim<-Nsim+d*sample(c(rep(1,abs(nsim-sum(Nsim))),
     rep(0,length(Nsim)-abs(nsim-sum(Nsim)))))
 nsim
 
-o1<-make.simmap(tree,x,model="ARD",nsim=nsim[1])
-o2<-make.simmap(tree,x,model="ER",nsim=nsim[2])
+o1<-make.simmap(tree,x,model="ARD",nsim=nsim[3])
+o2<-make.simmap(tree,x,model="ER",nsim=nsim[1])
 treesstudy<-c(o1,o2)
 
 objstudy<-describe.simmap(treesstudy)
@@ -132,9 +132,7 @@ nsim<-Nsim+d*sample(c(rep(1,abs(nsim-sum(Nsim))),
     rep(0,length(Nsim)-abs(nsim-sum(Nsim)))))
 nsim
 
-n1<-make.simmap(tree,x,model="ARD",nsim=nsim[1])
-n2<-make.simmap(tree,x,model="ER",nsim=nsim[2])
-treesnorell<-c(o1,o2)
+treesnorell<-make.simmap(tree,x,model="ARD",nsim=nsim[3])
 
 objnorell<-describe.simmap(treesnorell)
 
