@@ -432,7 +432,7 @@ Very strong signal for both absolute and relative eggshell thickness.
 
 - ASR for absolute eggshell thickness
 ```{r, warning = F}
-phyloplotAET<-contMap(treedi, AET, plot=F)
+phyloplotAET<-contMap(treedi, AET, plot=FALSE)
 plot(setMap(phyloplotAET,colors=rev(brewer.pal(10, "Spectral"))),type="fan",
      fsize=0.01,lwd=4,ylim=c(-2,Ntip(treenew)),part=0.8,legend=FALSE)
 add.color.bar(leg=100,cols=rev(brewer.pal(10,"Spectral")),
@@ -448,7 +448,7 @@ Furthermore, the pattern strongly follows that of body mass, as expected (e.g. S
 
 - ASR for relative eggshell thickness
 ```{r, warning = F}
-phyloplotRET<-contMap(treedi, RET, plot=F)
+phyloplotRET<-contMap(treedi, RET, plot=FALSE)
 plot(setMap(phyloplotRET,colors=rev(brewer.pal(10, "Spectral"))),type="fan",
      fsize=0.01,lwd=4,ylim=c(-2,Ntip(treenew)),part=0.8,legend=FALSE)
 add.color.bar(leg=100,cols=rev(brewer.pal(10,"Spectral")),
