@@ -20,7 +20,7 @@ Compiled under R version 4.2.0 (2022-04-22)
 <b>WARNING</b>: edit the working directory to your preferred folder.
 
 This document details all analyses performed in R for the study:  
-Legendre, L. J., S. Choi, and J. A. Clarke. The use of inconsistent terminology for reptile eggshell traits affects the outcome of evolutionary analyses. <i>Journal of Anatomy</i>.
+Legendre, L. J., S. Choi, and J. A. Clarke. The use of inconsistent terminology for reptile eggshell traits affects the outcome of evolutionary analyses. <i>Journal of Anatomy</i> <b>241</b>:641–666.
 
 For more information regarding the study, datasets, and analyses, please refer to the Main Text and Supplementary Information of this paper. If you have any additional questions, feel free to email me at <lucasjlegendre@gmail.com>.
 
