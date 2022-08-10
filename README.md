@@ -2,7 +2,7 @@
 
 Contains the dataset, phylogenetic tree, and R code related to analyses for the following study:
 
-Legendre, L. J., S. Choi, and J. A. Clarke. 2022. The diverse terminology of reptile eggshell microstructure and its effect on phylogenetic comparative analyses. <i>Journal of Anatomy</i>.
+Legendre, L. J., S. Choi, and J. A. Clarke. 2022. The diverse terminology of reptile eggshell microstructure and its effect on phylogenetic comparative analyses. <i>Journal of Anatomy</i> 241:641–666.
 
 File description:
 
